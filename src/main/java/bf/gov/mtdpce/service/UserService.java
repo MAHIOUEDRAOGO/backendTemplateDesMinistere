@@ -1,0 +1,120 @@
+package bf.gov.mtdpce.service;
+
+import bf.gov.mtdpce.dto.UserDTO;
+import bf.gov.mtdpce.entity.User;
+import bf.gov.mtdpce.exception.BadRequestException;
+import bf.gov.mtdpce.exception.ResourceNotFoundException;
+import bf.gov.mtdpce.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.stream.Collectors;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public Page<UserDTO> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::convertToDTO);
+    }
+
+    public Page<UserDTO> searchUsers(String search, Pageable pageable) {
+        return userRepository.searchUsers(search, pageable).map(this::convertToDTO);
+    }
+
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", id));
+        return convertToDTO(user);
+    }
+
+    public UserDTO getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "username", username));
+        return convertToDTO(user);
+    }
+
+    @Transactional
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", id));
+
+        if (userDTO.getEmail() != null && !userDTO.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(userDTO.getEmail())) {
+                throw new BadRequestException("Cet email est déjà utilisé");
+            }
+            user.setEmail(userDTO.getEmail());
+        }
+
+        if (userDTO.getFirstName() != null) user.setFirstName(userDTO.getFirstName());
+        if (userDTO.getLastName() != null) user.setLastName(userDTO.getLastName());
+        if (userDTO.getPhone() != null) user.setPhone(userDTO.getPhone());
+        if (userDTO.getPosition() != null) user.setPosition(userDTO.getPosition());
+        if (userDTO.getDepartment() != null) user.setDepartment(userDTO.getDepartment());
+        if (userDTO.getProfileImage() != null) user.setProfileImage(userDTO.getProfileImage());
+
+        return convertToDTO(userRepository.save(user));
+    }
+
+    @Transactional
+    public void changePassword(Long id, String oldPassword, String newPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", id));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BadRequestException("L'ancien mot de passe est incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void toggleUserStatus(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", id));
+        user.setEnabled(!user.getEnabled());
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Utilisateur", "id", id);
+        }
+        userRepository.deleteById(id);
+    }
+
+    public Long countActiveUsers() {
+        return userRepository.countActiveUsers();
+    }
+
+    private UserDTO convertToDTO(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phone(user.getPhone())
+                .position(user.getPosition())
+                .department(user.getDepartment())
+                .profileImage(user.getProfileImage())
+                .enabled(user.getEnabled())
+                .roles(user.getRoles().stream()
+                        .map(role -> role.getName().name())
+                        .collect(Collectors.toSet()))
+                .createdAt(user.getCreatedAt())
+                .lastLogin(user.getLastLogin())
+                .build();
+    }
+}
