@@ -12,11 +12,14 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 @Configuration
 @EnableWebSecurity
@@ -72,9 +75,11 @@ public class WebSecurityConfig {
                                 "/api/v1/flash-infos/public/**",
                                 "/api/v1/newsletter/public/**",
                                 "/v3/api-docs/**",
+                                "/uploads/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+
                         // OPTIONS pour CORS
                         .requestMatchers("/**").permitAll() // pré-vol CORS
                         // ====================
@@ -88,4 +93,24 @@ public class WebSecurityConfig {
 
         return http.build();
     }
+
+    @Bean
+    public HttpFirewall httpFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+
+        firewall.setAllowUrlEncodedLineFeed(true);        // %0A
+        firewall.setAllowUrlEncodedCarriageReturn(true);  // %0D
+
+        firewall.setAllowBackSlash(true);
+        firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowSemicolon(true);
+
+        return firewall;
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer(HttpFirewall firewall) {
+        return web -> web.httpFirewall(firewall);
+    }
+
 }

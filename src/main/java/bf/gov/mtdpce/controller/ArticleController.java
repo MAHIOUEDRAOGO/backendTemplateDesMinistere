@@ -13,12 +13,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/articles")
@@ -27,6 +36,8 @@ public class ArticleController {
 
     @Autowired
     private ArticleService articleService;
+
+    private static final String UPLOAD_BASE_PATH = "/opt/mtdpce/uploads/articles";
 
     // Public endpoints
     @GetMapping("/published")
@@ -102,15 +113,6 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponse.success(articleService.getArticleById(id)));
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Créer un article", description = "Crée un nouvel article")
-    public ResponseEntity<ApiResponse<ArticleDTO>> createArticle(
-            @Valid @RequestBody ArticleDTO articleDTO,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(ApiResponse.success("Article créé", articleService.createArticle(articleDTO, userDetails.getId())));
-    }
-
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Modifier un article", description = "Met à jour un article existant")
@@ -127,4 +129,81 @@ public class ArticleController {
         articleService.deleteArticle(id);
         return ResponseEntity.ok(ApiResponse.success("Article supprimé", null));
     }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Créer un article", description = "Crée un nouvel article avec image ou document")
+    public ResponseEntity<ArticleDTO> createArticle(
+            @RequestPart("article") ArticleDTO articleDTO,
+            @RequestParam Long authorId,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        try {
+            if (file != null && !file.isEmpty()) {
+                String filePath = saveFile(file);
+                articleDTO.setFeaturedImage(filePath); // on garde le même champ
+            }
+
+            ArticleDTO savedArticle = articleService.createArticle(articleDTO, authorId);
+            return ResponseEntity.ok(savedArticle);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur lors de l'upload du fichier", e);
+        }
+    }
+
+    private String saveFile(MultipartFile file) throws IOException {
+
+        String contentType = file.getContentType();
+
+        if (contentType == null) {
+            throw new RuntimeException("Type de fichier inconnu");
+        }
+
+        boolean isImage = contentType.startsWith("image/");
+        boolean isDocument = List.of(
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ).contains(contentType);
+
+        if (!isImage && !isDocument) {
+            throw new RuntimeException("Type de fichier non supporté : " + contentType);
+        }
+
+        String folder = isImage ? "images" : "documents";
+
+        String year = String.valueOf(LocalDate.now().getYear());
+        String month = String.format("%02d", LocalDate.now().getMonthValue());
+
+        Path uploadDir = Paths.get(UPLOAD_BASE_PATH, folder, year, month);
+        Files.createDirectories(uploadDir);
+
+        String extension = getExtension(file.getOriginalFilename());
+        String fileName = UUID.randomUUID() + extension;
+
+        Path filePath = uploadDir.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        return "/uploads/" + folder + "/" + year + "/" + month + "/" + fileName;
+    }
+
+    private String getExtension(String filename) {
+
+        if (filename == null) {
+            return "";
+        }
+
+        int lastDot = filename.lastIndexOf('.');
+
+        if (lastDot == -1) {
+            return "";
+        }
+
+        return filename.substring(lastDot).toLowerCase();
+    }
+
+
 }
