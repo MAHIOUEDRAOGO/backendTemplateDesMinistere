@@ -113,13 +113,33 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponse.success(articleService.getArticleById(id)));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(
+            value = "/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Modifier un article", description = "Met à jour un article existant")
-    public ResponseEntity<ApiResponse<ArticleDTO>> updateArticle(
+    @Operation(
+            summary = "Modifier un article",
+            description = "Modifie un article existant avec ou sans nouveau fichier"
+    )
+    public ResponseEntity<ArticleDTO> updateArticle(
             @PathVariable Long id,
-            @Valid @RequestBody ArticleDTO articleDTO) {
-        return ResponseEntity.ok(ApiResponse.success("Article mis à jour", articleService.updateArticle(id, articleDTO)));
+            @RequestPart("article") ArticleDTO articleDTO,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        try {
+            if (file != null && !file.isEmpty()) {
+                String filePath = saveFile(file);
+                articleDTO.setFeaturedImage(filePath);
+            }
+
+            ArticleDTO updatedArticle = articleService.updateArticle(id, articleDTO);
+
+            return ResponseEntity.ok(updatedArticle);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur lors de l'upload du fichier", e);
+        }
     }
 
     @DeleteMapping("/{id}")
