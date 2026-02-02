@@ -81,6 +81,10 @@ public class DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Document", "id", id));
 
         if (documentDTO.getTitle() != null) document.setTitle(documentDTO.getTitle());
+        if (documentDTO.getFileName() != null) document.setFileName(documentDTO.getFileName());
+        if (documentDTO.getFilePath() != null) document.setFilePath(documentDTO.getFilePath());
+        if (documentDTO.getFileType() != null) document.setFileType(documentDTO.getFileType());
+        if (documentDTO.getFileSize() != null) document.setFileSize(documentDTO.getFileSize());
         if (documentDTO.getDescription() != null) document.setDescription(documentDTO.getDescription());
         if (documentDTO.getCategory() != null) document.setCategory(documentDTO.getCategory());
         if (documentDTO.getIsPublic() != null) document.setIsPublic(documentDTO.getIsPublic());

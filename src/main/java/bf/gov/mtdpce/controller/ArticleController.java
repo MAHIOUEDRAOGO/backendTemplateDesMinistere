@@ -37,7 +37,7 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
-    private static final String UPLOAD_BASE_PATH = "/opt/mtdpce/uploads/articles";
+    private static final String UPLOAD_BASE_PATH = "/opt/mtdpce/uploads";
 
     // Public endpoints
     @GetMapping("/published")
