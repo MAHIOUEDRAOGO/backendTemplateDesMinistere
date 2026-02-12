@@ -43,6 +43,10 @@ public class Document {
     @Builder.Default
     private DocumentCategory category = DocumentCategory.AUTRE;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_id", nullable = false)
+    private Type type;
+
     @Column(name = "download_count")
     @Builder.Default
     private Integer downloadCount = 0;

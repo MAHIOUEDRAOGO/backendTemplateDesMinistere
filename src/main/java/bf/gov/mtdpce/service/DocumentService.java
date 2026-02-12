@@ -3,9 +3,11 @@ package bf.gov.mtdpce.service;
 import bf.gov.mtdpce.dto.DocumentDTO;
 import bf.gov.mtdpce.entity.Document;
 import bf.gov.mtdpce.entity.DocumentCategory;
+import bf.gov.mtdpce.entity.Type;
 import bf.gov.mtdpce.entity.User;
 import bf.gov.mtdpce.exception.ResourceNotFoundException;
 import bf.gov.mtdpce.repository.DocumentRepository;
+import bf.gov.mtdpce.repository.TypeRepository;
 import bf.gov.mtdpce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,9 @@ public class DocumentService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TypeRepository typeRepository;
 
     public Page<DocumentDTO> getAllDocuments(Pageable pageable) {
         return documentRepository.findAll(pageable).map(this::convertToDTO);
@@ -58,7 +63,8 @@ public class DocumentService {
     public DocumentDTO createDocument(DocumentDTO documentDTO, Long uploadedById) {
         User uploadedBy = userRepository.findById(uploadedById)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", uploadedById));
-
+        Type type = typeRepository.findById(documentDTO.getTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Type", "id", documentDTO.getTypeId()));
         Document document = Document.builder()
                 .title(documentDTO.getTitle())
                 .description(documentDTO.getDescription())
@@ -70,6 +76,7 @@ public class DocumentService {
                 .isPublic(documentDTO.getIsPublic() != null ? documentDTO.getIsPublic() : true)
                 .downloadCount(0)
                 .uploadedBy(uploadedBy)
+                .type(type)
                 .build();
 
         return convertToDTO(documentRepository.save(document));
@@ -79,6 +86,10 @@ public class DocumentService {
     public DocumentDTO updateDocument(Long id, DocumentDTO documentDTO) {
         Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Document", "id", id));
+
+        Type type = typeRepository.findById(documentDTO.getTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Type", "id", documentDTO.getTypeId()));
+        document.setType(type);
 
         if (documentDTO.getTitle() != null) document.setTitle(documentDTO.getTitle());
         if (documentDTO.getFileName() != null) document.setFileName(documentDTO.getFileName());
@@ -122,6 +133,8 @@ public class DocumentService {
                 .fileType(document.getFileType())
                 .fileSize(document.getFileSize())
                 .category(document.getCategory())
+                .typeId(document.getType().getId())
+                .typeName(document.getType().getName())
                 .downloadCount(document.getDownloadCount())
                 .isPublic(document.getIsPublic())
                 .uploadedByName(document.getUploadedBy().getFirstName() + " " + document.getUploadedBy().getLastName())

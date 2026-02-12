@@ -52,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
         initUsers();
         initArticles();
         initProjects();
-        initDocuments();
+        //initDocuments();
         initEvents();
         initFAQs();
         initEServices();

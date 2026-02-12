@@ -62,6 +62,25 @@ public class UserService {
             user.setEmail(userDTO.getEmail());
         }
 
+        if (userDTO.getRoles() != null) {
+            Set<Role> roles = new HashSet<>();
+            for (String roleName : userDTO.getRoles()) {
+                ERole eRole;
+                try {
+                    eRole = ERole.valueOf(roleName);
+                } catch (IllegalArgumentException ex) {
+                    throw new BadRequestException("Rôle invalide : " + roleName);
+                }
+                Role role = roleRepository.findByName(eRole)
+                        .orElseThrow(() -> new RuntimeException("Rôle introuvable : " + roleName));
+                roles.add(role);
+            }
+            if (roles.isEmpty()) {
+                throw new BadRequestException("Un utilisateur doit avoir au moins un rôle");
+            }
+            user.setRoles(roles);
+        }
+
         if (userDTO.getFirstName() != null) user.setFirstName(userDTO.getFirstName());
         if (userDTO.getLastName() != null) user.setLastName(userDTO.getLastName());
         if (userDTO.getPhone() != null) user.setPhone(userDTO.getPhone());

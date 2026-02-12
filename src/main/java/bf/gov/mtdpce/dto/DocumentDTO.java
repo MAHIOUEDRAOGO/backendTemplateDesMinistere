@@ -30,6 +30,8 @@ public class DocumentDTO {
     private String fileType;
     private Long fileSize;
     private DocumentCategory category;
+    private Long typeId;
+    private String typeName;
     private Integer downloadCount;
     private Boolean isPublic;
     private String uploadedByName;
