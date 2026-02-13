@@ -35,6 +35,9 @@ public class Document {
     @Column(name = "file_type", length = 100)
     private String fileType;
 
+    @Column(name = "typedocument", length = 100)
+    private String typeDocument;
+
     @Column(name = "file_size")
     private Long fileSize;
 

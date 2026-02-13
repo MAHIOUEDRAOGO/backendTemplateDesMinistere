@@ -71,6 +71,7 @@ public class DocumentService {
                 .fileName(documentDTO.getFileName())
                 .filePath(documentDTO.getFilePath())
                 .fileType(documentDTO.getFileType())
+                .typeDocument(documentDTO.getTypeDocument())
                 .fileSize(documentDTO.getFileSize())
                 .category(documentDTO.getCategory() != null ? documentDTO.getCategory() : DocumentCategory.AUTRE)
                 .isPublic(documentDTO.getIsPublic() != null ? documentDTO.getIsPublic() : true)
@@ -95,6 +96,7 @@ public class DocumentService {
         if (documentDTO.getFileName() != null) document.setFileName(documentDTO.getFileName());
         if (documentDTO.getFilePath() != null) document.setFilePath(documentDTO.getFilePath());
         if (documentDTO.getFileType() != null) document.setFileType(documentDTO.getFileType());
+        if (documentDTO.getTypeDocument() != null) document.setTypeDocument(documentDTO.getTypeDocument());
         if (documentDTO.getFileSize() != null) document.setFileSize(documentDTO.getFileSize());
         if (documentDTO.getDescription() != null) document.setDescription(documentDTO.getDescription());
         if (documentDTO.getCategory() != null) document.setCategory(documentDTO.getCategory());
@@ -131,6 +133,7 @@ public class DocumentService {
                 .fileName(document.getFileName())
                 .filePath(document.getFilePath())
                 .fileType(document.getFileType())
+                .typeDocument(document.getTypeDocument())
                 .fileSize(document.getFileSize())
                 .category(document.getCategory())
                 .typeId(document.getType().getId())
