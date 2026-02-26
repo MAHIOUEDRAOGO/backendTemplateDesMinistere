@@ -87,6 +87,8 @@ public class EventService {
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
         event.setStartDate(request.getStartDate());
+        event.setContent(request.getContent());
+        event.setStatut(request.getStatut());
         event.setEndDate(request.getEndDate());
         event.setLocation(request.getLocation());
         event.setImageUrl(request.getImageUrl());
@@ -101,6 +103,8 @@ public class EventService {
         response.setId(event.getId());
         response.setTitle(event.getTitle());
         response.setDescription(event.getDescription());
+        response.setContent(event.getContent());
+        response.setStatut(event.getStatut());
         response.setStartDate(event.getStartDate());
         response.setEndDate(event.getEndDate());
         response.setLocation(event.getLocation());

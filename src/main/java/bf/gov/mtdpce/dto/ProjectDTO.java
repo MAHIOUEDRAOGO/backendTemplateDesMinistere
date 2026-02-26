@@ -1,6 +1,7 @@
 package bf.gov.mtdpce.dto;
 
 import bf.gov.mtdpce.entity.ProjectStatus;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -27,9 +28,10 @@ public class ProjectDTO {
     @NotBlank(message = "La description est requise")
     private String description;
 
-    @Size(max = 500, message = "Les objectifs ne doivent pas dépasser 500 caractères")
     private String objectives;
-
+    private String type;
+    private Long categorieProjetId;
+    private String categorieProjetName;
     private String featuredImage;
     private ProjectStatus status;
     private BigDecimal budget;

@@ -3,9 +3,11 @@ package bf.gov.mtdpce.service;
 import bf.gov.mtdpce.dto.ProjectDTO;
 import bf.gov.mtdpce.entity.Project;
 import bf.gov.mtdpce.entity.ProjectStatus;
+import bf.gov.mtdpce.entity.ProjetCategorie;
 import bf.gov.mtdpce.entity.User;
 import bf.gov.mtdpce.exception.ResourceNotFoundException;
 import bf.gov.mtdpce.repository.ProjectRepository;
+import bf.gov.mtdpce.repository.ProjetCategorieRepository;
 import bf.gov.mtdpce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,9 @@ public class ProjectService {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private ProjetCategorieRepository projetCategorieRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -62,10 +67,14 @@ public class ProjectService {
                     .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", managerId));
         }
 
+        ProjetCategorie projetCategorie = projetCategorieRepository.findById(projectDTO.getCategorieProjetId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categorie", "id", projectDTO.getCategorieProjetId()));
+
         Project project = Project.builder()
                 .name(projectDTO.getName())
                 .description(projectDTO.getDescription())
                 .objectives(projectDTO.getObjectives())
+                .projetCategorie(projetCategorie)
                 .featuredImage(projectDTO.getFeaturedImage())
                 .status(projectDTO.getStatus() != null ? projectDTO.getStatus() : ProjectStatus.PLANIFIE)
                 .budget(projectDTO.getBudget())
@@ -85,6 +94,10 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Projet", "id", id));
 
+        ProjetCategorie projetCategorie = projetCategorieRepository.findById(projectDTO.getCategorieProjetId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categorie", "id", projectDTO.getCategorieProjetId()));
+
+        project.setProjetCategorie(projetCategorie);
         if (projectDTO.getName() != null) project.setName(projectDTO.getName());
         if (projectDTO.getDescription() != null) project.setDescription(projectDTO.getDescription());
         if (projectDTO.getObjectives() != null) project.setObjectives(projectDTO.getObjectives());
@@ -133,6 +146,9 @@ public class ProjectService {
                 .name(project.getName())
                 .description(project.getDescription())
                 .objectives(project.getObjectives())
+                .type(project.getType())
+                .categorieProjetId(project.getProjetCategorie().getId())
+                .categorieProjetName(project.getProjetCategorie().getName())
                 .featuredImage(project.getFeaturedImage())
                 .status(project.getStatus())
                 .budget(project.getBudget())

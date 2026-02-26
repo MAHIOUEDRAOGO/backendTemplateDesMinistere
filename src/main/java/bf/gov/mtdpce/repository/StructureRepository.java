@@ -12,22 +12,7 @@ import java.util.List;
 
 @Repository
 public interface StructureRepository extends JpaRepository<Structure, Long> {
-    
-    Page<Structure> findByIsActiveTrueOrderByDisplayOrderAsc(Pageable pageable);
-    
-    List<Structure> findByParentIsNullAndIsActiveTrueOrderByDisplayOrderAsc();
-    
-    List<Structure> findByParentIdAndIsActiveTrueOrderByDisplayOrderAsc(Long parentId);
-    
-    List<Structure> findByStructureTypeAndIsActiveTrueOrderByDisplayOrderAsc(StructureType type);
-    
-    @Query("SELECT s FROM Structure s WHERE s.isActive = true AND " +
-           "(LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(s.acronym) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(s.description) LIKE LOWER(CONCAT('%', :query, '%')))")
-    Page<Structure> searchStructures(String query, Pageable pageable);
-    
-    long countByIsActiveTrue();
-    
-    long countByStructureTypeAndIsActiveTrue(StructureType type);
+
+    boolean existsByAcronym(String acronym);
+    Page<Structure> findByStructureType(StructureType structureType, Pageable pageable);
 }

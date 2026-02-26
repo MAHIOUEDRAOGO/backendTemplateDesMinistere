@@ -28,11 +28,14 @@ public class Project {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "TEXT")
     private String objectives;
 
     @Column(name = "featured_image")
     private String featuredImage;
+
+    @Column(name = "type", length = 100)
+    private String type;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -61,6 +64,10 @@ public class Project {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private User manager;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "projet_categorie_id", nullable = false)
+    private ProjetCategorie projetCategorie;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

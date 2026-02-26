@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,12 @@ public class Agenda {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @Column(nullable = false, length = 255)
+    private String lieux;
+
+    @Column(name = "date_publication")
+    private LocalDate datePublication;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

@@ -2,6 +2,7 @@ package bf.gov.mtdpce.dto;
 
 import bf.gov.mtdpce.entity.AgendaStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,6 +28,10 @@ public class AgendaDTO {
     private Long authorId;
 
     private String authorName;
+
+    private String lieux;
+
+    private LocalDate datePublication;
 
     private LocalDateTime publishedAt;
 

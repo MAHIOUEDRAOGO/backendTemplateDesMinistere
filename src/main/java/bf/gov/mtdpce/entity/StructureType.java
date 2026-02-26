@@ -7,5 +7,6 @@ public enum StructureType {
     SERVICE,
     AGENCE,
     ETABLISSEMENT,
-    PROJET
+    PROJET,
+    CABINET
 }

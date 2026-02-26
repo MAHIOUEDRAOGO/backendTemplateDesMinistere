@@ -77,6 +77,8 @@ public class AgendaService {
                 .title(agendaDTO.getTitle())
                 .summary(agendaDTO.getSummary())
                 .content(agendaDTO.getContent())
+                .datePublication(agendaDTO.getDatePublication())
+                .lieux(agendaDTO.getLieux())
                 .status(agendaDTO.getStatus() != null ? agendaDTO.getStatus() : AgendaStatus.DRAFT)
                 .author(author)
                 .build();
@@ -114,6 +116,12 @@ public class AgendaService {
 
         if (agendaDTO.getContent() != null)
             agenda.setContent(agendaDTO.getContent());
+
+        if (agendaDTO.getLieux() != null)
+            agenda.setLieux(agendaDTO.getLieux());
+
+        if (agendaDTO.getDatePublication() != null)
+            agenda.setDatePublication(agendaDTO.getDatePublication());
 
         if (agendaDTO.getStatus() != null) {
             if (agendaDTO.getStatus() == AgendaStatus.PUBLISHED
@@ -169,6 +177,8 @@ public class AgendaService {
                 .content(agenda.getContent())
                 .status(agenda.getStatus())
                 .authorId(agenda.getAuthor().getId())
+                .datePublication(agenda.getDatePublication())
+                .lieux(agenda.getLieux())
                 .authorName(agenda.getAuthor().getFirstName() + " " + agenda.getAuthor().getLastName())
                 .publishedAt(agenda.getPublishedAt())
                 .createdAt(agenda.getCreatedAt())

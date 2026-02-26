@@ -51,12 +51,12 @@ public class DataInitializer implements CommandLineRunner {
         initRoles();
         initUsers();
         initArticles();
-        initProjects();
+        //initProjects();
         //initDocuments();
-        initEvents();
-        initFAQs();
-        initEServices();
-        initFlashInfos();
+        //initEvents();
+        //initFAQs();
+        //initEServices();
+       // initFlashInfos();
     }
 
     private void initRoles() {

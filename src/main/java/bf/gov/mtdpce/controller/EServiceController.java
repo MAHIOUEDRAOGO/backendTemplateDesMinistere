@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/services")
+@RequestMapping("/api/v1/service")
 @Tag(name = "E-Services", description = "Gestion des services en ligne")
 public class EServiceController {
     
