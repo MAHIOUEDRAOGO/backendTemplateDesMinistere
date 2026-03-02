@@ -8,37 +8,34 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ministere")
+@Table(name = "ministre")
 @Data
-public class Ministere {
-
+public class Ministre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String nomGeneral;
-
-    @Column(nullable = false, length = 255)
-    private String nomReel;
-
-    @Column(nullable = false, length = 255)
-    private String acronyme;
+    private String nom;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String missionGeneral;
+    private String prenom;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String presentationSynthetique;
+    private String profession;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String presentationGlobale;
+    private String biographie;
 
-    @Column(name = "logo")
-    private String logo;
+    @Column(columnDefinition = "TEXT")
+    private String photo;
 
-    @Column(name = "image")
-    private String image;
+    @Column(name = "is_actif")
+    private Boolean isActif = false;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ministere_id", nullable = false)
+    private Ministere ministere;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -47,4 +44,5 @@ public class Ministere {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }

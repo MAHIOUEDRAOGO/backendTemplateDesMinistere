@@ -1,8 +1,7 @@
 package bf.gov.mtdpce.controller;
-
 import bf.gov.mtdpce.dto.ApiResponse;
-import bf.gov.mtdpce.dto.MinistereDTO;
-import bf.gov.mtdpce.service.MinistereService;
+import bf.gov.mtdpce.dto.MinistreDTO;
+import bf.gov.mtdpce.service.MinistreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,23 +24,23 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+
 @RestController
-@RequestMapping("/api/v1/ministeres")
-@Tag(name = "Ministères", description = "API de gestion des ministères")
-public class MinistereController {
+@RequestMapping("/api/v1/ministres")
+@Tag(name = "Ministres", description = "API de gestion des ministres")
+public class MinistreController {
 
     @Autowired
-    private MinistereService ministereService;
-
+    private MinistreService ministreService;
     private static final String UPLOAD_BASE_PATH = "/opt/mtdpce/uploads";
 
     @GetMapping
-    @Operation(summary = "Liste des ministères")
-    public ResponseEntity<ApiResponse<Page<MinistereDTO>>> getAllMinisteres(
+    @Operation(summary = "Liste des ministres")
+    public ResponseEntity<ApiResponse<Page<MinistreDTO>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "nomReel") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
 
         Sort sort = sortDir.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
@@ -50,88 +49,61 @@ public class MinistereController {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         return ResponseEntity.ok(
-                ApiResponse.success(ministereService.getAll(pageable))
+                ApiResponse.success(ministreService.getAll(pageable))
         );
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Détail d'un ministère")
-    public ResponseEntity<ApiResponse<MinistereDTO>> getMinistereById(@PathVariable Long id) {
+    @Operation(summary = "Détail d'un ministre")
+    public ResponseEntity<ApiResponse<MinistreDTO>> getById(@PathVariable Long id) {
 
         return ResponseEntity.ok(
-                ApiResponse.success(ministereService.getById(id))
+                ApiResponse.success(ministreService.getById(id))
         );
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Créer un ministère", description = "Crée un ministère avec logo optionnel")
-    public ResponseEntity<MinistereDTO> createMinistere(
-            @RequestPart("ministere") MinistereDTO ministereDTO,
-            @RequestParam Long authorId,
-            @RequestPart(value = "logo", required = false) MultipartFile logo,
-            @RequestPart(value = "image", required = false) MultipartFile image
-    ) {
-        try {
+    @Operation(summary = "Créer un ministre")
+    public ResponseEntity<MinistreDTO> create(
+            @RequestPart("ministre") MinistreDTO ministreDTO,
+            @RequestPart(value = "photo", required = false) MultipartFile photo
+    ) throws IOException {
 
-            if (logo != null && !logo.isEmpty()) {
-                String filePath = saveFile(logo);
-                ministereDTO.setLogo(filePath);
-            }
-
-            if (image!= null && !image.isEmpty()) {
-                String filePath = saveFile(image);
-                ministereDTO.setImage(filePath);
-            }
-
-            MinistereDTO saved = ministereService.create(ministereDTO, authorId);
-
-            return ResponseEntity.ok(saved);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Erreur lors de l'upload du logo", e);
+        if (photo != null && !photo.isEmpty()) {
+            String filePath = saveFile(photo);
+            ministreDTO.setPhoto(filePath);
         }
+
+        return ResponseEntity.ok(ministreService.create(ministreDTO));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Modifier un ministère")
-    public ResponseEntity<MinistereDTO> updateMinistere(
+    @Operation(summary = "Modifier un ministre")
+    public ResponseEntity<MinistreDTO> update(
             @PathVariable Long id,
-            @RequestPart("ministere") MinistereDTO ministereDTO,
-            @RequestPart(value = "logo", required = false) MultipartFile logo,
-            @RequestPart(value = "image", required = false) MultipartFile image
-    ) {
-        try {
+            @RequestPart("ministre") MinistreDTO ministreDTO,
+            @RequestPart(value = "photo", required = false) MultipartFile photo
+    ) throws IOException {
 
-            if (logo != null && !logo.isEmpty()) {
-                String filePath = saveFile(logo);
-                ministereDTO.setLogo(filePath);
-            }
-
-            if (image!= null && !image.isEmpty()) {
-                String filePath = saveFile(image);
-                ministereDTO.setImage(filePath);
-            }
-
-            MinistereDTO updated = ministereService.update(id, ministereDTO);
-
-            return ResponseEntity.ok(updated);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Erreur lors de l'upload du logo", e);
+        if (photo != null && !photo.isEmpty()) {
+            String filePath = saveFile(photo);
+            ministreDTO.setPhoto(filePath);
         }
+
+        return ResponseEntity.ok(ministreService.update(id, ministreDTO));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Supprimer un ministère")
-    public ResponseEntity<ApiResponse<Void>> deleteMinistere(@PathVariable Long id) {
+    @Operation(summary = "Supprimer un ministre")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
 
-        ministereService.delete(id);
+        ministreService.delete(id);
 
         return ResponseEntity.ok(
-                ApiResponse.success("Ministère supprimé", null)
+                ApiResponse.success("Ministre supprimé", null)
         );
     }
 
@@ -188,4 +160,3 @@ public class MinistereController {
         return filename.substring(lastDot).toLowerCase();
     }
 }
-

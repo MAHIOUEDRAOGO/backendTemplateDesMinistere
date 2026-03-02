@@ -47,7 +47,11 @@ public class MinistereService {
         ministere.setNomGeneral(dto.getNomGeneral());
         ministere.setNomReel(dto.getNomReel());
         ministere.setAcronyme(dto.getAcronyme());
+        ministere.setMissionGeneral(dto.getMissionGeneral());
+        ministere.setPresentationSynthetique(dto.getPresentationSynthetique());
+        ministere.setPresentationGlobale(dto.getPresentationGlobale());
         ministere.setLogo(dto.getLogo());
+        ministere.setImage(dto.getImage());
 
         Ministere saved = ministereRepository.save(ministere);
 
@@ -59,7 +63,6 @@ public class MinistereService {
         Ministere ministere = ministereRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ministère non trouvé"));
 
-        // Vérifie unicité acronyme si changé
         if (!ministere.getAcronyme().equals(ministereDTO.getAcronyme())
                 && ministereRepository.existsByAcronyme(ministereDTO.getAcronyme())) {
 
@@ -69,10 +72,13 @@ public class MinistereService {
         ministere.setNomGeneral(ministereDTO.getNomGeneral());
         ministere.setNomReel(ministereDTO.getNomReel());
         ministere.setAcronyme(ministereDTO.getAcronyme());
+        ministere.setMissionGeneral(ministereDTO.getMissionGeneral());
 
-        // Logo seulement si fourni
         if (ministereDTO.getLogo() != null) {
             ministere.setLogo(ministereDTO.getLogo());
+        }
+        if (ministereDTO.getImage() != null) {
+            ministere.setImage(ministereDTO.getImage());
         }
 
         Ministere updated = ministereRepository.save(ministere);
@@ -95,7 +101,11 @@ public class MinistereService {
         dto.setNomGeneral(ministere.getNomGeneral());
         dto.setNomReel(ministere.getNomReel());
         dto.setAcronyme(ministere.getAcronyme());
+        dto.setMissionGeneral(ministere.getMissionGeneral());
+        dto.setPresentationSynthetique(ministere.getPresentationSynthetique());
+        dto.setPresentationGlobale(ministere.getPresentationGlobale());
         dto.setLogo(ministere.getLogo());
+        dto.setImage(ministere.getImage());
         dto.setCreatedAt(ministere.getCreatedAt());
         dto.setUpdatedAt(ministere.getUpdatedAt());
 

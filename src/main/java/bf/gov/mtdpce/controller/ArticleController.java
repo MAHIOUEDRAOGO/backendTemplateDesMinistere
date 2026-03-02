@@ -224,6 +224,4 @@ public class ArticleController {
 
         return filename.substring(lastDot).toLowerCase();
     }
-
-
 }
