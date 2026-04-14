@@ -1,6 +1,7 @@
 package bf.gov.mtdpce.service;
 
 import bf.gov.mtdpce.entity.Article;
+import bf.gov.mtdpce.entity.ArticleImage;
 import bf.gov.mtdpce.event.ArticlePublishedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -45,36 +48,210 @@ public class FacebookPublisherService {
     @EventListener
     @Async
     public void onArticlePublished(ArticlePublishedEvent event) {
+//        Article article = event.getArticle();
+//        log.info("Publication Facebook de l'article : {}", article.getId());
+//
+//        try {
+//            String featuredImage = article.getFeaturedImage();
+//
+//            if (featuredImage != null && !featuredImage.isBlank()) {
+//                log.info("Image détectée : '{}'", featuredImage);
+//                publierAvecImage(article, featuredImage); // on passe le chemin relatif
+//            } else {
+//                log.info("Pas d'image pour l'article {}", article.getId());
+//                publierSansImage(article);
+//            }
+//        } catch (Exception e) {
+//            log.error("Erreur publication Facebook article {} : {}",
+//                    article.getId(), e.getMessage());
+//        }
+//    }
+//
+//    private void publierAvecImage(Article article, String cheminRelatif) {
+//        try {
+//            // Publier directement la photo comme post (avec message et lien)
+//            // au lieu de créer un feed post avec attached_media
+//            String url = graphApiUrl + "/" + pageId + "/photos";
+//
+//            String sousChemín = cheminRelatif.replace("/uploads", "");
+//            Path cheminFichier = Paths.get(UPLOAD_BASE_PATH + sousChemín);
+//
+//            if (!Files.exists(cheminFichier)) {
+//                log.error("Fichier image introuvable : {}", cheminFichier);
+//                publierSansImage(article);
+//                return;
+//            }
+//
+//            byte[] imageBytes = Files.readAllBytes(cheminFichier);
+//            String fileName = cheminFichier.getFileName().toString();
+//
+//            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+//            body.add("access_token", accessToken);
+//            body.add("published", "true");  // publié directement
+//            body.add("message", construireMessage(article));
+//            body.add("source", new ByteArrayResource(imageBytes) {
+//                @Override
+//                public String getFilename() {
+//                    return fileName;
+//                }
+//            });
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//
+//            ResponseEntity<String> response = restTemplate.postForEntity(
+//                    url,
+//                    new HttpEntity<>(body, headers),
+//                    String.class
+//            );
+//            log.info("Article {} publié sur Facebook avec image : {}",
+//                    article.getId(), response.getBody());
+//
+//        } catch (Exception e) {
+//            log.error("Erreur publication avec image : {}", e.getMessage());
+//            publierSansImage(article);
+//        }
+//    }
+//
+//    private void publierSansImage(Article article) {
+//        String url = graphApiUrl + "/" + pageId + "/feed";
+//
+//        Map<String, String> body = new HashMap<>();
+//        body.put("message", construireMessage(article));
+//        body.put("link", baseUrl + "/articles/" + article.getId());
+//        body.put("access_token", accessToken);
+//
+//        ResponseEntity<String> response = restTemplate.postForEntity(
+//                url, body, String.class
+//        );
+//        log.info("Article {} publié sur Facebook sans image : {}",
+//                article.getId(), response.getBody());
+//    }
+//
+//    private String uploaderImage(String cheminRelatif) {
+//        try {
+//            // cheminRelatif = "/uploads/images/2026/03/fichier.png"
+//            // On reconstruit le chemin physique :
+//            // /opt/mtdpce/uploads + /images/2026/03/fichier.png
+//            String sousChemín = cheminRelatif.replace("/uploads", "");
+//            Path cheminFichier = Paths.get(UPLOAD_BASE_PATH + sousChemín);
+//
+//            log.info("Chemin physique de l'image : '{}'", cheminFichier);
+//
+//            if (!Files.exists(cheminFichier)) {
+//                log.error("Fichier image introuvable : {}", cheminFichier);
+//                return null;
+//            }
+//
+//            String url = graphApiUrl + "/" + pageId + "/photos";
+//
+//            byte[] imageBytes = Files.readAllBytes(cheminFichier);
+//            String fileName = cheminFichier.getFileName().toString();
+//
+//            log.info("Upload image vers Facebook : {} ({} bytes)", fileName, imageBytes.length);
+//
+//            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+//            body.add("access_token", accessToken);
+//            body.add("published", "false");
+//            body.add("source", new ByteArrayResource(imageBytes) {
+//                @Override
+//                public String getFilename() {
+//                    return fileName;
+//                }
+//            });
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//
+//            ResponseEntity<Map> response = restTemplate.postForEntity(
+//                    url,
+//                    new HttpEntity<>(body, headers),
+//                    Map.class
+//            );
+//
+//            if (response.getBody() != null && response.getBody().containsKey("id")) {
+//                String photoId = response.getBody().get("id").toString();
+//                log.info("Image uploadée avec succès, photoId : {}", photoId);
+//                return photoId;
+//            }
+//
+//        } catch (Exception e) {
+//            log.error("Erreur upload image Facebook : {}", e.getMessage());
+//        }
+//        return null;
+//    }
+//
+//    private String construireMessage(Article article) {
+//        return String.format(
+//                "%s\n\n%s\n\nCategorie : %s\n\nLire la suite : %s",
+//                article.getTitle(),
+//                article.getSummary(),
+//                article.getContent(),
+//                article.getCategory().name(),
+//                baseUrl + "/articles/" + article.getId()
+//        );
+//    }
         Article article = event.getArticle();
         log.info("Publication Facebook de l'article : {}", article.getId());
 
         try {
-            String featuredImage = article.getFeaturedImage();
+            // Construire la liste complète des chemins d'images
+            List<String> chemins = collecterCheminsImages(article);
 
-            if (featuredImage != null && !featuredImage.isBlank()) {
-                log.info("Image détectée : '{}'", featuredImage);
-                publierAvecImage(article, featuredImage); // on passe le chemin relatif
-            } else {
-                log.info("Pas d'image pour l'article {}", article.getId());
+            log.info("Nombre d'images trouvées pour l'article {} : {}",
+                    article.getId(), chemins.size());
+
+            if (chemins.isEmpty()) {
                 publierSansImage(article);
+            } else if (chemins.size() == 1) {
+                publierAvecUneImage(article, chemins.get(0));
+            } else {
+                publierAvecPlusieursImages(article, chemins);
             }
+
         } catch (Exception e) {
             log.error("Erreur publication Facebook article {} : {}",
                     article.getId(), e.getMessage());
         }
     }
 
-    private void publierAvecImage(Article article, String cheminRelatif) {
+    // Collecte featuredImage + images de la liste ArticleImage
+    private List<String> collecterCheminsImages(Article article) {
+        List<String> chemins = new ArrayList<>();
+
+        // 1. Ajouter la featuredImage en premier si elle existe
+        if (article.getFeaturedImage() != null
+                && !article.getFeaturedImage().isBlank()) {
+            chemins.add(article.getFeaturedImage());
+        }
+
+        // 2. Ajouter les images de la liste (en évitant les doublons)
+        if (article.getImages() != null) {
+            // Mettre d'abord les images featured de la liste
+            article.getImages().stream()
+                    .filter(img -> Boolean.TRUE.equals(img.getIsFeatured()))
+                    .map(ArticleImage::getImageUrl)
+                    .filter(url -> !chemins.contains(url))
+                    .forEach(chemins::add);
+
+            // Puis les autres images
+            article.getImages().stream()
+                    .filter(img -> !Boolean.TRUE.equals(img.getIsFeatured()))
+                    .map(ArticleImage::getImageUrl)
+                    .filter(url -> !chemins.contains(url))
+                    .forEach(chemins::add);
+        }
+
+        return chemins;
+    }
+
+    // Cas 1 image : publication directe via /photos
+    private void publierAvecUneImage(Article article, String cheminRelatif) {
         try {
-            // Publier directement la photo comme post (avec message et lien)
-            // au lieu de créer un feed post avec attached_media
-            String url = graphApiUrl + "/" + pageId + "/photos";
+            log.info("Publication avec 1 image : {}", cheminRelatif);
 
-            String sousChemín = cheminRelatif.replace("/uploads", "");
-            Path cheminFichier = Paths.get(UPLOAD_BASE_PATH + sousChemín);
-
-            if (!Files.exists(cheminFichier)) {
-                log.error("Fichier image introuvable : {}", cheminFichier);
+            Path cheminFichier = construireCheminFichier(cheminRelatif);
+            if (cheminFichier == null) {
                 publierSansImage(article);
                 return;
             }
@@ -82,100 +259,172 @@ public class FacebookPublisherService {
             byte[] imageBytes = Files.readAllBytes(cheminFichier);
             String fileName = cheminFichier.getFileName().toString();
 
+            String url = graphApiUrl + "/" + pageId + "/photos";
+
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("access_token", accessToken);
-            body.add("published", "true");  // publié directement
+            body.add("published", "true");
             body.add("message", construireMessage(article));
             body.add("source", new ByteArrayResource(imageBytes) {
                 @Override
-                public String getFilename() {
-                    return fileName;
-                }
+                public String getFilename() { return fileName; }
             });
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    url,
-                    new HttpEntity<>(body, headers),
-                    String.class
+                    url, new HttpEntity<>(body, headers), String.class
             );
-            log.info("Article {} publié sur Facebook avec image : {}",
+            log.info("Article {} publié avec 1 image : {}",
                     article.getId(), response.getBody());
 
         } catch (Exception e) {
-            log.error("Erreur publication avec image : {}", e.getMessage());
+            log.error("Erreur publication 1 image, fallback sans image : {}",
+                    e.getMessage());
             publierSansImage(article);
         }
     }
 
-    private void publierSansImage(Article article) {
-        String url = graphApiUrl + "/" + pageId + "/feed";
+    // Cas N images : upload chaque image puis post groupé
+    private void publierAvecPlusieursImages(Article article, List<String> chemins) {
+        log.info("Publication avec {} images", chemins.size());
 
-        Map<String, String> body = new HashMap<>();
-        body.put("message", construireMessage(article));
-        body.put("link", baseUrl + "/articles/" + article.getId());
-        body.put("access_token", accessToken);
+        // Étape 1 : uploader chaque image et récupérer son photoId
+        List<String> photoIds = new ArrayList<>();
+        for (String chemin : chemins) {
+            String photoId = uploaderImageNonPubliee(chemin);
+            if (photoId != null) {
+                photoIds.add(photoId);
+                log.info("Image uploadée : {} → photoId: {}", chemin, photoId);
+            } else {
+                log.warn("Échec upload image : {}", chemin);
+            }
+        }
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                url, body, String.class
-        );
-        log.info("Article {} publié sur Facebook sans image : {}",
-                article.getId(), response.getBody());
-    }
+        if (photoIds.isEmpty()) {
+            log.warn("Aucune image uploadée, fallback sans image");
+            publierSansImage(article);
+            return;
+        }
 
-    private String uploaderImage(String cheminRelatif) {
+        if (photoIds.size() == 1) {
+            // Si une seule image a réussi, on republier en mode 1 image
+            log.info("1 seule image uploadée avec succès, republication en mode 1 image");
+            publierAvecUneImage(article, chemins.get(0));
+            return;
+        }
+
+        // Étape 2 : publier le post avec toutes les images
         try {
-            // cheminRelatif = "/uploads/images/2026/03/fichier.png"
-            // On reconstruit le chemin physique :
-            // /opt/mtdpce/uploads + /images/2026/03/fichier.png
-            String sousChemín = cheminRelatif.replace("/uploads", "");
-            Path cheminFichier = Paths.get(UPLOAD_BASE_PATH + sousChemín);
+            String url = graphApiUrl + "/" + pageId + "/feed";
 
-            log.info("Chemin physique de l'image : '{}'", cheminFichier);
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("message", construireMessage(article));
+            body.add("link", baseUrl + "/articles/" + article.getId());
+            body.add("access_token", accessToken);
 
-            if (!Files.exists(cheminFichier)) {
-                log.error("Fichier image introuvable : {}", cheminFichier);
-                return null;
+            // Attacher chaque photo au format attendu par Facebook
+            for (int i = 0; i < photoIds.size(); i++) {
+                body.add("attached_media[" + i + "]",
+                        "{\"media_fbid\":\"" + photoIds.get(i) + "\"}");
             }
 
-            String url = graphApiUrl + "/" + pageId + "/photos";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    url, new HttpEntity<>(body, headers), String.class
+            );
+            log.info("Article {} publié avec {} images : {}",
+                    article.getId(), photoIds.size(), response.getBody());
+
+        } catch (Exception e) {
+            log.error("Erreur publication multi-images, fallback sans image : {}",
+                    e.getMessage());
+            publierSansImage(article);
+        }
+    }
+
+    // Cas 0 image : post texte + lien
+    private void publierSansImage(Article article) {
+        try {
+            String url = graphApiUrl + "/" + pageId + "/feed";
+
+            Map<String, String> body = new HashMap<>();
+            body.put("message", construireMessage(article));
+            body.put("link", baseUrl + "/articles/" + article.getId());
+            body.put("access_token", accessToken);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    url, body, String.class
+            );
+            log.info("Article {} publié sans image : {}",
+                    article.getId(), response.getBody());
+
+        } catch (Exception e) {
+            log.error("Erreur publication sans image article {} : {}",
+                    article.getId(), e.getMessage());
+        }
+    }
+
+    // Upload une image en "non publiée" et retourne son photoId
+    private String uploaderImageNonPubliee(String cheminRelatif) {
+        try {
+            Path cheminFichier = construireCheminFichier(cheminRelatif);
+            if (cheminFichier == null) return null;
 
             byte[] imageBytes = Files.readAllBytes(cheminFichier);
             String fileName = cheminFichier.getFileName().toString();
 
-            log.info("Upload image vers Facebook : {} ({} bytes)", fileName, imageBytes.length);
+            String url = graphApiUrl + "/" + pageId + "/photos";
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("access_token", accessToken);
             body.add("published", "false");
             body.add("source", new ByteArrayResource(imageBytes) {
                 @Override
-                public String getFilename() {
-                    return fileName;
-                }
+                public String getFilename() { return fileName; }
             });
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             ResponseEntity<Map> response = restTemplate.postForEntity(
-                    url,
-                    new HttpEntity<>(body, headers),
-                    Map.class
+                    url, new HttpEntity<>(body, headers), Map.class
             );
 
-            if (response.getBody() != null && response.getBody().containsKey("id")) {
-                String photoId = response.getBody().get("id").toString();
-                log.info("Image uploadée avec succès, photoId : {}", photoId);
-                return photoId;
+            if (response.getBody() != null
+                    && response.getBody().containsKey("id")) {
+                return response.getBody().get("id").toString();
             }
 
         } catch (Exception e) {
-            log.error("Erreur upload image Facebook : {}", e.getMessage());
+            log.error("Erreur upload image {} : {}", cheminRelatif, e.getMessage());
         }
         return null;
+    }
+
+    // Reconstruit le chemin physique depuis le chemin relatif
+    private Path construireCheminFichier(String cheminRelatif) {
+        try {
+            // /uploads/images/2026/03/fichier.png
+            // → /opt/mtdpce/uploads/images/2026/03/fichier.png
+            String sousChemín = cheminRelatif.replace("/uploads", "");
+            Path cheminFichier = Paths.get(UPLOAD_BASE_PATH + sousChemín);
+
+            log.info("Chemin physique : '{}'", cheminFichier);
+
+            if (!Files.exists(cheminFichier)) {
+                log.error("Fichier introuvable : {}", cheminFichier);
+                return null;
+            }
+            return cheminFichier;
+
+        } catch (Exception e) {
+            log.error("Erreur construction chemin : {}", e.getMessage());
+            return null;
+        }
     }
 
     private String construireMessage(Article article) {
@@ -183,7 +432,6 @@ public class FacebookPublisherService {
                 "%s\n\n%s\n\nCategorie : %s\n\nLire la suite : %s",
                 article.getTitle(),
                 article.getSummary(),
-                article.getContent(),
                 article.getCategory().name(),
                 baseUrl + "/articles/" + article.getId()
         );

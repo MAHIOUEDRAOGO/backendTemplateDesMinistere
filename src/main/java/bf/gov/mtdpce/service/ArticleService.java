@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,6 +101,7 @@ public class ArticleService {
                 .featured(articleDTO.getFeatured() != null ? articleDTO.getFeatured() : false)
                 .author(author)
                 .viewCount(0)
+                .images(new ArrayList<>())
                 .build();
 
         if (article.getStatus() == ArticleStatus.PUBLISHED) {
@@ -119,7 +121,11 @@ public class ArticleService {
 
         // NOUVEAU : publier sur Facebook si statut PUBLISHED dès la création
         if (saved.getStatus() == ArticleStatus.PUBLISHED) {
-            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
+//            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
+            Article articleAvecImages = articleRepository
+                    .findWithImagesById(saved.getId())
+                    .orElse(saved);
+            eventPublisher.publishEvent(new ArticlePublishedEvent(articleAvecImages));
         }
         return convertToDTO(saved);
     }
@@ -163,7 +169,11 @@ public class ArticleService {
                 && saved.getStatus() == ArticleStatus.PUBLISHED;
 
         if (vientDEtrePublie) {
-            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
+//            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
+            Article articleAvecImages = articleRepository
+                    .findWithImagesById(saved.getId())
+                    .orElse(saved);
+            eventPublisher.publishEvent(new ArticlePublishedEvent(articleAvecImages));
         }
 
         return convertToDTO(saved);

@@ -5,12 +5,14 @@ import bf.gov.mtdpce.entity.ArticleCategory;
 import bf.gov.mtdpce.entity.ArticleStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
@@ -34,4 +36,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Long countByStatus(@Param("status") ArticleStatus status);
 
     Page<Article> findByAuthorId(Long authorId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"images", "author"})
+    Optional<Article> findWithImagesById(Long id);
 }
