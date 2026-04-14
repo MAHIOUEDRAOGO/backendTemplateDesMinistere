@@ -50,7 +50,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         initRoles();
         initUsers();
-        initArticles();
+        //initArticles();
         //initProjects();
         //initDocuments();
         //initEvents();

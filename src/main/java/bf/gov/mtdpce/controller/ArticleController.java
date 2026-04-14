@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -125,15 +126,12 @@ public class ArticleController {
     public ResponseEntity<ArticleDTO> updateArticle(
             @PathVariable Long id,
             @RequestPart("article") ArticleDTO articleDTO,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "file", required = false) List<MultipartFile> file
     ) {
         try {
-            if (file != null && !file.isEmpty()) {
-                String filePath = saveFile(file);
-                articleDTO.setFeaturedImage(filePath);
-            }
 
-            ArticleDTO updatedArticle = articleService.updateArticle(id, articleDTO);
+            List<String> imagePaths = uploadMultipleFiles(file);
+            ArticleDTO updatedArticle = articleService.updateArticle(id, articleDTO,imagePaths);
 
             return ResponseEntity.ok(updatedArticle);
 
@@ -156,20 +154,39 @@ public class ArticleController {
     public ResponseEntity<ArticleDTO> createArticle(
             @RequestPart("article") ArticleDTO articleDTO,
             @RequestParam Long authorId,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "file", required = false) List<MultipartFile> file
     ) {
         try {
-            if (file != null && !file.isEmpty()) {
-                String filePath = saveFile(file);
-                articleDTO.setFeaturedImage(filePath); // on garde le même champ
-            }
+            List<String> imagePaths = uploadMultipleFiles(file);
 
-            ArticleDTO savedArticle = articleService.createArticle(articleDTO, authorId);
+            ArticleDTO savedArticle = articleService.createArticle(articleDTO, authorId,imagePaths);
             return ResponseEntity.ok(savedArticle);
 
         } catch (IOException e) {
             throw new RuntimeException("Erreur lors de l'upload du fichier", e);
         }
+    }
+
+    /*
+     * ============================================
+     * FILE UPLOAD LOGIC
+     * ============================================
+     */
+
+    private List<String> uploadMultipleFiles(List<MultipartFile> files) throws IOException {
+
+        if (files == null || files.isEmpty()) return null;
+
+        List<String> paths = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+
+            if (!file.isEmpty()) {
+                paths.add(saveFile(file));
+            }
+        }
+
+        return paths;
     }
 
     private String saveFile(MultipartFile file) throws IOException {

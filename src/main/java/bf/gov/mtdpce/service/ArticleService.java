@@ -1,14 +1,15 @@
 package bf.gov.mtdpce.service;
 
+import bf.gov.mtdpce.dto.AgendaImageDTO;
 import bf.gov.mtdpce.dto.ArticleDTO;
-import bf.gov.mtdpce.entity.Article;
-import bf.gov.mtdpce.entity.ArticleCategory;
-import bf.gov.mtdpce.entity.ArticleStatus;
-import bf.gov.mtdpce.entity.User;
+import bf.gov.mtdpce.dto.ArticleImageDTO;
+import bf.gov.mtdpce.entity.*;
+import bf.gov.mtdpce.event.ArticlePublishedEvent;
 import bf.gov.mtdpce.exception.ResourceNotFoundException;
 import bf.gov.mtdpce.repository.ArticleRepository;
 import bf.gov.mtdpce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class ArticleService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     public Page<ArticleDTO> getAllArticles(Pageable pageable) {
         return articleRepository.findAll(pageable).map(this::convertToDTO);
@@ -82,7 +86,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleDTO createArticle(ArticleDTO articleDTO, Long authorId) {
+    public ArticleDTO createArticle(ArticleDTO articleDTO, Long authorId,List<String> imagePaths) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", authorId));
 
@@ -102,13 +106,31 @@ public class ArticleService {
             article.setPublishedAt(LocalDateTime.now());
         }
 
-        return convertToDTO(articleRepository.save(article));
+        if (imagePaths != null && !imagePaths.isEmpty()) {
+            for (String path : imagePaths) {
+                ArticleImage image = ArticleImage.builder()
+                        .imageUrl(path)
+                        .article(article)
+                        .build();
+                article.getImages().add(image);
+            }
+        }
+        Article saved = articleRepository.save(article);
+
+        // NOUVEAU : publier sur Facebook si statut PUBLISHED dès la création
+        if (saved.getStatus() == ArticleStatus.PUBLISHED) {
+            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
+        }
+        return convertToDTO(saved);
     }
 
     @Transactional
-    public ArticleDTO updateArticle(Long id, ArticleDTO articleDTO) {
+    public ArticleDTO updateArticle(Long id, ArticleDTO articleDTO,List<String> imagePaths) {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
+
+        // Mémoriser le statut avant modification
+        ArticleStatus ancienStatut = article.getStatus();
 
         if (articleDTO.getTitle() != null) article.setTitle(articleDTO.getTitle());
         if (articleDTO.getSummary() != null) article.setSummary(articleDTO.getSummary());
@@ -124,7 +146,27 @@ public class ArticleService {
             article.setStatus(articleDTO.getStatus());
         }
 
-        return convertToDTO(articleRepository.save(article));
+        if (imagePaths != null && !imagePaths.isEmpty()) {
+            for (String path : imagePaths) {
+                ArticleImage image = ArticleImage.builder()
+                        .imageUrl(path)
+                        .article(article)
+                        .build();
+                article.getImages().add(image);
+            }
+        }
+
+        Article saved = articleRepository.save(article);
+
+        // NOUVEAU : publier sur Facebook uniquement si on passe de DRAFT → PUBLISHED
+        boolean vientDEtrePublie = ancienStatut != ArticleStatus.PUBLISHED
+                && saved.getStatus() == ArticleStatus.PUBLISHED;
+
+        if (vientDEtrePublie) {
+            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
+        }
+
+        return convertToDTO(saved);
     }
 
     @Transactional
@@ -140,6 +182,14 @@ public class ArticleService {
     }
 
     private ArticleDTO convertToDTO(Article article) {
+
+        List<ArticleImageDTO> images = article.getImages()
+                .stream()
+                .map(img -> ArticleImageDTO.builder()
+                        .id(img.getId())
+                        .imageUrl(img.getImageUrl())
+                        .build())
+                .toList();
         return ArticleDTO.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -155,6 +205,7 @@ public class ArticleService {
                 .publishedAt(article.getPublishedAt())
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
+                .images(images)
                 .build();
     }
 }

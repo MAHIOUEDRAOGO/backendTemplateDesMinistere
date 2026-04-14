@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,11 +21,10 @@ public class ArticleDTO {
     private Long id;
 
     @NotBlank(message = "Le titre est requis")
-    @Size(max = 255, message = "Le titre ne doit pas dépasser 255 caractères")
+    @Size(max = 500, message = "Le titre ne doit pas dépasser 255 caractères")
     private String title;
 
     @NotBlank(message = "Le résumé est requis")
-    @Size(max = 500, message = "Le résumé ne doit pas dépasser 500 caractères")
     private String summary;
 
     @NotBlank(message = "Le contenu est requis")
@@ -40,4 +40,5 @@ public class ArticleDTO {
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<ArticleImageDTO> images;
 }

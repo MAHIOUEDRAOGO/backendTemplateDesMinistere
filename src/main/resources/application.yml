@@ -22,6 +22,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        default_schema: mtdpce
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   
@@ -57,3 +58,9 @@ logging:
     root: INFO
     bf.gov.mtdpce: DEBUG
     org.springframework.security: DEBUG
+
+facebook:
+  page-id: 308567739007291
+  access-token: EAAUaCZClpIGMBQym1kANQGMj4PxAte0O1UmodKb4nETqa6nsdZCYa2BMo7UX0vkmtix9WvMXFoAw0frzSgVzsMeM3zxsnDOtTB3zxZBAkvTXDknZCYqoptw33XfKMMPZCrJJ0SG138RnDXkrjR5iwwhphEZCb2DUCxiUf8mGMxys7UPTrZCZCUyIhxQZCZB8GSJGGzZCSUr2Mgi
+  graph-api-url: https://graph.facebook.com/v25.0
+  base-url: http://69.62.125.38:8096
