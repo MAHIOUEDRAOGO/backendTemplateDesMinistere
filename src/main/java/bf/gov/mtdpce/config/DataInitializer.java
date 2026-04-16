@@ -46,10 +46,13 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired private ThemeRepository themeRepository;
+
     @Override
     public void run(String... args) throws Exception {
         initRoles();
         initUsers();
+        initTheme();
         //initArticles();
         //initProjects();
         //initDocuments();
@@ -68,6 +71,13 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
+    public void initTheme()
+    {
+        if(themeRepository.count()==0)
+        {
+            themeRepository.save(Theme.builder().title("Rouge & Or").primaryColor("#f43f5e").accentColor("#ca8a04").secondaryColor("#6366f1").tertiaryColor("#14b8a6").build());
+        }
+    }
     private void initUsers() {
         if (userRepository.count() == 0) {
             Role superAdminRole = roleRepository.findByName(ERole.ROLE_SUPER_ADMIN).orElseThrow();

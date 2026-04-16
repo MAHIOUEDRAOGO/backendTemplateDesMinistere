@@ -1,6 +1,7 @@
 package bf.gov.mtdpce.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -16,6 +17,15 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:" + UPLOAD_BASE_PATH + "/")
                 .setCachePeriod(3600)
                 .resourceChain(true);
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("https://site-test.tic.gov.bf") // Votre URL front
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 }
 

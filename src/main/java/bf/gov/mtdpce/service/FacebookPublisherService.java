@@ -290,58 +290,57 @@ public class FacebookPublisherService {
     private void publierAvecPlusieursImages(Article article, List<String> chemins) {
         log.info("Publication avec {} images", chemins.size());
 
-        // Étape 1 : uploader chaque image et récupérer son photoId
         List<String> photoIds = new ArrayList<>();
+
+        // 1. Upload images
         for (String chemin : chemins) {
             String photoId = uploaderImageNonPubliee(chemin);
+
             if (photoId != null) {
                 photoIds.add(photoId);
                 log.info("Image uploadée : {} → photoId: {}", chemin, photoId);
-            } else {
-                log.warn("Échec upload image : {}", chemin);
             }
         }
 
         if (photoIds.isEmpty()) {
-            log.warn("Aucune image uploadée, fallback sans image");
             publierSansImage(article);
             return;
         }
 
-        if (photoIds.size() == 1) {
-            // Si une seule image a réussi, on republier en mode 1 image
-            log.info("1 seule image uploadée avec succès, republication en mode 1 image");
-            publierAvecUneImage(article, chemins.get(0));
-            return;
-        }
-
-        // Étape 2 : publier le post avec toutes les images
         try {
             String url = graphApiUrl + "/" + pageId + "/feed";
 
-            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-            body.add("message", construireMessage(article));
-            body.add("link", baseUrl + "/articles/" + article.getId());
-            body.add("access_token", accessToken);
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("access_token", accessToken);
 
-            // Attacher chaque photo au format attendu par Facebook
+            // ✅ TEXTE + lien DANS le message
+            params.add("message", construireMessage(article));
+
+            // ✅ Ajouter les images
             for (int i = 0; i < photoIds.size(); i++) {
-                body.add("attached_media[" + i + "]",
-                        "{\"media_fbid\":\"" + photoIds.get(i) + "\"}");
+                params.add(
+                        "attached_media[" + i + "]",
+                        "{\"media_fbid\":\"" + photoIds.get(i) + "\"}"
+                );
             }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+            HttpEntity<MultiValueMap<String, String>> request =
+                    new HttpEntity<>(params, headers);
+
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    url, new HttpEntity<>(body, headers), String.class
+                    url,
+                    request,
+                    String.class
             );
+
             log.info("Article {} publié avec {} images : {}",
                     article.getId(), photoIds.size(), response.getBody());
 
         } catch (Exception e) {
-            log.error("Erreur publication multi-images, fallback sans image : {}",
-                    e.getMessage());
+            log.error("Erreur publication multi-images : {}", e.getMessage());
             publierSansImage(article);
         }
     }
