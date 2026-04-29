@@ -3,6 +3,7 @@ package bf.gov.mtdpce.service;
 import bf.gov.mtdpce.dto.AgendaImageDTO;
 import bf.gov.mtdpce.dto.ArticleDTO;
 import bf.gov.mtdpce.dto.ArticleImageDTO;
+import bf.gov.mtdpce.dto.FacebookImageDTO;
 import bf.gov.mtdpce.entity.*;
 import bf.gov.mtdpce.event.ArticlePublishedEvent;
 import bf.gov.mtdpce.exception.ResourceNotFoundException;
@@ -87,7 +88,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleDTO createArticle(ArticleDTO articleDTO, Long authorId,List<String> imagePaths) {
+    public ArticleDTO createArticle(ArticleDTO articleDTO, Long authorId,List<String> imagePaths,List<String> imagePathsFacebook) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", authorId));
 
@@ -102,6 +103,7 @@ public class ArticleService {
                 .author(author)
                 .viewCount(0)
                 .images(new ArrayList<>())
+                .imagesFacebook(new ArrayList<>())
                 .build();
 
         if (article.getStatus() == ArticleStatus.PUBLISHED) {
@@ -117,13 +119,23 @@ public class ArticleService {
                 article.getImages().add(image);
             }
         }
+
+        if (imagePathsFacebook != null && !imagePathsFacebook.isEmpty()) {
+            for (String path : imagePathsFacebook) {
+                FacebookImage facebookImage = FacebookImage.builder()
+                        .imageUrl(path)
+                        .article(article)
+                        .build();
+                article.getImagesFacebook().add(facebookImage);
+            }
+        }
         Article saved = articleRepository.save(article);
 
         // NOUVEAU : publier sur Facebook si statut PUBLISHED dès la création
         if (saved.getStatus() == ArticleStatus.PUBLISHED) {
 //            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
             Article articleAvecImages = articleRepository
-                    .findWithImagesById(saved.getId())
+                    .findWithFacebookImagesById(saved.getId())
                     .orElse(saved);
             eventPublisher.publishEvent(new ArticlePublishedEvent(articleAvecImages));
         }
@@ -131,7 +143,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleDTO updateArticle(Long id, ArticleDTO articleDTO,List<String> imagePaths) {
+    public ArticleDTO updateArticle(Long id, ArticleDTO articleDTO,List<String> imagePaths,List<String> imagePathsFacebook) {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
 
@@ -162,6 +174,16 @@ public class ArticleService {
             }
         }
 
+        if (imagePathsFacebook != null && !imagePathsFacebook.isEmpty()) {
+            for (String path : imagePathsFacebook) {
+                FacebookImage facebookImage = FacebookImage.builder()
+                        .imageUrl(path)
+                        .article(article)
+                        .build();
+                article.getImagesFacebook().add(facebookImage);
+            }
+        }
+
         Article saved = articleRepository.save(article);
 
         // NOUVEAU : publier sur Facebook uniquement si on passe de DRAFT → PUBLISHED
@@ -171,7 +193,7 @@ public class ArticleService {
         if (vientDEtrePublie) {
 //            eventPublisher.publishEvent(new ArticlePublishedEvent(saved));
             Article articleAvecImages = articleRepository
-                    .findWithImagesById(saved.getId())
+                    .findWithFacebookImagesById(saved.getId())
                     .orElse(saved);
             eventPublisher.publishEvent(new ArticlePublishedEvent(articleAvecImages));
         }
@@ -200,6 +222,13 @@ public class ArticleService {
                         .imageUrl(img.getImageUrl())
                         .build())
                 .toList();
+        List<FacebookImageDTO> imagesFacebook = article.getImagesFacebook()
+                .stream()
+                .map(img -> FacebookImageDTO.builder()
+                        .id(img.getId())
+                        .imageUrl(img.getImageUrl())
+                        .build())
+                .toList();
         return ArticleDTO.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -216,6 +245,7 @@ public class ArticleService {
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
                 .images(images)
+                .imagesFacebook(imagesFacebook)
                 .build();
     }
 }

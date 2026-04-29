@@ -39,4 +39,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     @EntityGraph(attributePaths = {"images", "author"})
     Optional<Article> findWithImagesById(Long id);
+
+    @EntityGraph(attributePaths = {"imagesFacebook", "author"})
+    Optional<Article> findWithFacebookImagesById(Long id);
 }

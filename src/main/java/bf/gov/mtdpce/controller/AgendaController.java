@@ -102,7 +102,7 @@ public class AgendaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+//    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Détail agenda", description = "Récupère un agenda par son ID (admin)")
     public ResponseEntity<ApiResponse<AgendaDTO>> getAgendaById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(

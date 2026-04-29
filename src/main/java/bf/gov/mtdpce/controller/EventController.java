@@ -65,7 +65,7 @@ public class EventController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")//
     @Operation(summary = "Liste de tous les événements (admin)")
     public ResponseEntity<PaginatedResponse<EventResponse>> getAllEvents(
             @RequestParam(defaultValue = "0") int page,

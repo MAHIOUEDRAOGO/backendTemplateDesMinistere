@@ -12,20 +12,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + UPLOAD_BASE_PATH + "/")
                 .setCachePeriod(3600)
                 .resourceChain(true);
-    }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("https://site-test.tic.gov.bf") // Votre URL front
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
     }
 }
 

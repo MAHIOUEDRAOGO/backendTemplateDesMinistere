@@ -126,12 +126,14 @@ public class ArticleController {
     public ResponseEntity<ArticleDTO> updateArticle(
             @PathVariable Long id,
             @RequestPart("article") ArticleDTO articleDTO,
-            @RequestPart(value = "file", required = false) List<MultipartFile> file
+            @RequestPart(value = "file", required = false) List<MultipartFile> file,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
         try {
 
             List<String> imagePaths = uploadMultipleFiles(file);
-            ArticleDTO updatedArticle = articleService.updateArticle(id, articleDTO,imagePaths);
+            List<String> imagePathsFacebook = uploadMultipleFiles(files);
+            ArticleDTO updatedArticle = articleService.updateArticle(id, articleDTO,imagePaths,imagePathsFacebook);
 
             return ResponseEntity.ok(updatedArticle);
 
@@ -154,12 +156,13 @@ public class ArticleController {
     public ResponseEntity<ArticleDTO> createArticle(
             @RequestPart("article") ArticleDTO articleDTO,
             @RequestParam Long authorId,
-            @RequestPart(value = "file", required = false) List<MultipartFile> file
+            @RequestPart(value = "file", required = false) List<MultipartFile> file,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
         try {
             List<String> imagePaths = uploadMultipleFiles(file);
-
-            ArticleDTO savedArticle = articleService.createArticle(articleDTO, authorId,imagePaths);
+            List<String> imagePathsFacebook = uploadMultipleFiles(files);
+            ArticleDTO savedArticle = articleService.createArticle(articleDTO, authorId,imagePaths,imagePathsFacebook);
             return ResponseEntity.ok(savedArticle);
 
         } catch (IOException e) {

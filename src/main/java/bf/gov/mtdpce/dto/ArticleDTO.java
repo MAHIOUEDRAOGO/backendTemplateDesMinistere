@@ -2,6 +2,7 @@ package bf.gov.mtdpce.dto;
 
 import bf.gov.mtdpce.entity.ArticleCategory;
 import bf.gov.mtdpce.entity.ArticleStatus;
+import bf.gov.mtdpce.entity.FacebookImage;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -41,4 +42,5 @@ public class ArticleDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<ArticleImageDTO> images;
+    private List<FacebookImageDTO> imagesFacebook;
 }

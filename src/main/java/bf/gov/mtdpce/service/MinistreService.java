@@ -52,9 +52,12 @@ public class MinistreService {
         ministre.setPrenom(dto.getPrenom());
         ministre.setProfession(dto.getProfession());
         ministre.setBiographie(dto.getBiographie());
+        ministre.setContent(dto.getContent());
         ministre.setPhoto(dto.getPhoto());
         ministre.setIsActif(dto.getIsActif());
         ministre.setMinistere(ministere);
+        ministre.setDateDebut(dto.getDateDebut());
+        ministre.setDateFin(dto.getDateFin());
 
         return convertToDTO(ministreRepository.save(ministre));
     }
@@ -75,7 +78,10 @@ public class MinistreService {
         ministre.setPrenom(dto.getPrenom());
         ministre.setProfession(dto.getProfession());
         ministre.setBiographie(dto.getBiographie());
+        ministre.setContent(dto.getContent());
         ministre.setPhoto(dto.getPhoto());
+        ministre.setDateDebut(dto.getDateDebut());
+        ministre.setDateFin(dto.getDateFin());
         ministre.setIsActif(dto.getIsActif());
         ministre.setMinistere(ministere);
 
@@ -105,9 +111,12 @@ public class MinistreService {
         dto.setPrenom(ministre.getPrenom());
         dto.setProfession(ministre.getProfession());
         dto.setBiographie(ministre.getBiographie());
+        dto.setContent(ministre.getContent());
         dto.setPhoto(ministre.getPhoto());
         dto.setIsActif(ministre.getIsActif());
         dto.setMinistereId(ministre.getMinistere().getId());
+        dto.setDateDebut(ministre.getDateDebut());
+        dto.setDateFin(ministre.getDateFin());
         dto.setCreatedAt(ministre.getCreatedAt());
         dto.setUpdatedAt(ministre.getUpdatedAt());
 
