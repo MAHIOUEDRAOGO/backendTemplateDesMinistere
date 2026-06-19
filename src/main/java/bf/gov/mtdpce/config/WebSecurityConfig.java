@@ -66,7 +66,8 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 //.cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .cors(cors -> cors.disable())
+                //.cors(cors -> cors.disable()) remplacer par la ligne suivante
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
